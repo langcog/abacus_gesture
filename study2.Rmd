@@ -53,7 +53,8 @@ Reformat factors
 structure condition levels so that baseline is the reference level and the others apper in a sensible order on graphs
 
 ```{r}
-data.bysub$condition <- factor(data.bysub$condition)
+data.bysub$condition <- factor(data.bysub$condition, 
+                               levels = )
 ```
 
 Make subnum a factor
@@ -122,37 +123,31 @@ To get simple effects p values: use t-as-z heuristic.
 
 ### check about other factors to possibly include in model
 
+Age
+
 ```{r}
 lm.1 <- lmer(threshold ~ condition+ age + (1+condition|subnum) + (1|age), 
              data=data.frame(data.bytrial)) #t=.12
+2*(1-pnorm(abs((fixef(lm.1)/sqrt(diag(vcov(lm.1)))))))
 ```
 
-Age not significant at `r 2*(1-pnorm(abs((fixef(lm.1)/sqrt(diag(vcov(lm.1)))))))`.
+Gender
 
 ```{r}
 lm.1 <- lmer(threshold ~ condition+ gender + (1+condition |subnum) + (1|gender),
              data=data.frame(data.bytrial))
+2*(1-pnorm(abs((fixef(lm.1)/sqrt(diag(vcov(lm.1)))))))
 ```
 
-Gender not significant at `r 2*(1-pnorm(abs((fixef(lm.1)/sqrt(diag(vcov(lm.1)))))))`.
+Order
 
 ```{r}
 # 
 data.bytrial$order <- factor(data.bytrial$order)
 lm.1 <- lmer(threshold ~ condition + order + (1+ condition|subnum) + (1|order), 
              data=data.frame(data.bytrial)) 
+2*(1-pnorm(abs((fixef(lm.1)/sqrt(diag(vcov(lm.1)))))))
 ```
-
-Task order not significant at `r  2*(1-pnorm(abs((fixef(lm.1)/sqrt(diag(vcov(lm.1)))))))`.
-
-```{r}
-lm.2 <- lmer(threshold ~ condition * order + (1+ condition|subnum) + (1|order), 
-             data=data.frame(data.bytrial)) 
-Anova(lm.2) 
-```
-
-Order * condition interaction also not significant. 
-
 
 ## get Z scoes on thresholds to do a population X condition interaction:
 
@@ -177,9 +172,9 @@ data.bytrial <- read_csv("data/study2/novices/finaldata/MAstudy2_novices_bytrial
 
 data.bysub$condition <- factor(data.bysub$condition, 
                                levels = c("baseline", "blindfold",
-                                          "stillhands","intererence"), 
+                                          "stillhands","interference"), 
                                  labels = c("Baseline", "Blindfold",
-                                            "No Hands", "Motor Interference"))
+                                            "Sit on Hands", "Motor Interference"))
 data.bysub$subnum <- factor(data.bysub$subnum)
 ```
 
@@ -287,36 +282,32 @@ kable(summary(thresh.lmr)$coefficients, digits = 3)
 
 ### check about other factors to possibly include in model
 
+Age
+
 ```{r}
 lm.1 <- lmer(threshold ~ condition+ age + (1+condition|subnum) + (1|age), 
              data=data.frame(data.bytrial)) #t=.12
+2*(1-pnorm(abs((fixef(lm.1)/sqrt(diag(vcov(lm.1)))))))
 ```
 
-Age not significant at `r 2*(1-pnorm(abs((fixef(lm.1)/sqrt(diag(vcov(lm.1)))))))`.
+Gender
 
 ```{r}
 lm.1 <- lmer(threshold ~ condition+ gender + (1+condition |subnum) + (1|gender),
              data=data.frame(data.bytrial))
+2*(1-pnorm(abs((fixef(lm.1)/sqrt(diag(vcov(lm.1)))))))
 ```
 
-Gender not significant at `r 2*(1-pnorm(abs((fixef(lm.1)/sqrt(diag(vcov(lm.1)))))))`.
+Order
 
 ```{r}
-# 
 data.bytrial$order <- factor(data.bytrial$order)
 lm.1 <- lmer(threshold ~ condition + order + (1+ condition|subnum) + (1|order), 
              data=data.frame(data.bytrial)) 
+2*(1-pnorm(abs((fixef(lm.1)/sqrt(diag(vcov(lm.1)))))))
 ```
 
-Task order not significant at `r  2*(1-pnorm(abs((fixef(lm.1)/sqrt(diag(vcov(lm.1)))))))`.
 
-```{r}
-lm.2 <- lmer(threshold ~ condition * order + (1+ condition|subnum) + (1|order), 
-             data=data.frame(data.bytrial)) 
-Anova(lm.2) 
-```
-
-Order * condition interaction also not significant. 
 
 ## get Z scoes on thresholds to do a population X condition interaction:
 
@@ -337,10 +328,6 @@ write_csv(novices.zscores,
 novices.zscores$pop <- "novices"
 experts.zscores$pop <- "experts"
 all <- bind_rows(novices.zscores, experts.zscores)
-summary(all) #need to make subnum and order factors
-all$subnum <- factor(all$subnum)
-all$order <- factor(all$order)
-all$pop <- factor(all$pop)
 ```
 
 ```{r}

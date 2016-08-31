@@ -97,7 +97,34 @@ And show coefficients in a nice table.
 kable(summary(sizefull)$coefficients, digits = 3)
 ```
 
-Binomial analyses
+and p-vals by t=z
+
+```{r}
+2*(1-pnorm(abs((fixef(sizefull)/sqrt(diag(vcov(sizefull)))))))
+```
+
+# Control for coder
+
+Do we still see effects of difficulty and level? do these interact with coder? Yes and yes.
+
+```{r}
+sizefull.coder <- lmer(size ~ difficulty + log(level) + 
+                         coder * difficulty + coder * level + 
+                   (difficulty + log(level) | subnum), 
+                 data=data) 
+kable(summary(sizefull.coder)$coefficients, digits = 3)
+```
+
+Another approach: analyze coder as a random effect - this is maybe more correct?
+
+```{r}
+sizefull.coder <- lmer(size ~ difficulty + moves + trial + log(level) + 
+                         (difficulty + moves + trial + log(level) | coder) +  
+                   (difficulty + moves + trial + log(level) | subnum), 
+                 data=data) 
+kable(summary(sizefull.coder)$coefficients, digits = 3)
+```
+## Binomial analyses
 
 ```{r}
 size.allfour.binom <- glmer(size.01 ~ difficulty + moves + trial + log(level) + 
@@ -109,6 +136,12 @@ And show coefficients.
 
 ```{r}
 kable(summary(size.allfour.binom)$coefficients, digits = 3)
+```
+
+and p-vals by t=z
+
+```{r}
+2*(1-pnorm(abs((fixef(size.allfour.binom)/sqrt(diag(vcov(size.allfour.binom)))))))
 ```
 
 # Plot
@@ -152,20 +185,4 @@ qplot(level,measure, colour=Subjective_Difficulty,
   theme_bw(base_size=14) +
   scale_color_brewer(palette="Set1")+
   theme(legend.justification = c(0,0), legend.position=c(.6,.7))
-```
-
-# Control for coder
-
-Try this out. 
-
-```{r}
-sizefull <- lmer(size ~ difficulty + moves + trial + log(level) + 
-                   (difficulty + moves + trial + log(level)| subnum), 
-                 data=data) 
-```
-
-And show coefficients in a nice table. 
-
-```{r}
-kable(summary(sizefull)$coefficients, digits = 3)
 ```

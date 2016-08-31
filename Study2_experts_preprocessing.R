@@ -1,12 +1,11 @@
 # Study 2 Experts: Data Preprocessing
 rm(list=ls())
-setwd("~/Desktop/Abacus_gesture/*first_paper/abacus_gesture_analyses/Study2/experts/rawdata")
-# SET WORKING DIRECTORY TO FOLDER CONTAINING MATLAB OUTPUT AND DEMOGRAPHICS DATA
+library(readr)
 
 # import computer data from all subjects (exported from matlab)
-matlab_output <- read.csv('2013_India_Audio_output data9-13-2013.csv')
+matlab_output <- read.csv('data/study2/experts/rawdata/2013_India_Audio_output data9-13-2013.csv')
 # import demographics data
-demographics <- read.csv('demographics.csv')[,c("subnum","birthdate","testing.date","age","gender")]
+demographics <- read.csv('data/study2/experts/rawdata/demographics.csv')[,c("subnum","birthdate","testing.date","age","gender")]
 #merge computer data and demographics data
 data <- merge(matlab_output, demographics, by="subnum", all.x=T, all.y=F)
 
@@ -72,5 +71,5 @@ levels(bysub.cons$condition) <- c("Baseline","Blindfold","Sit on Hands","Motor I
 bysub.cons$subnum <- factor(bysub.cons$subnum)
 
 #OUTPUT DATA
-write.csv(bysub.cons, "finaldata/MAstudy2_experts_bysub.csv")
-write.csv(data.cons[is.na(data.cons$subnum)==F,], "finaldata/MAstudy2_experts_bytrial.csv")
+write_csv(bysub.cons, "data/study2/experts/finaldata/MAstudy2_experts_bysub.csv")
+write_csv(data.cons[is.na(data.cons$subnum)==F,], "data/study2/experts/finaldata/MAstudy2_experts_bytrial.csv")

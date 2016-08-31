@@ -1,12 +1,11 @@
 # Study 2 Novices: Data Preprocessing
 rm(list=ls())
-setwd("~/Desktop/Abacus_gesture/*first_paper/abacus_gesture_analyses/Study2/novices/rawdata")
-# SET WORKING DIRECTORY TO FOLDER CONTAINING MATLAB OUTPUT AND DEMOGRAPHICS DATA
+library(readr)
 
 # import computer data from all subjects (exported from matlab)
-matlab_output <- read.csv('2013_USA_Audio_output data15-Jul-2015.csv')
+matlab_output <- read.csv('data/study2/novices/rawdata/2013_USA_Audio_output data15-Jul-2015.csv')
 # import demographics data
-demographics <- read.csv('demographics_usa.csv') 
+demographics <- read.csv('data/study2/novices/rawdata/demographics_usa.csv') 
 #merge computer data and demographics data
 data <- merge(matlab_output, demographics, by="subnum", all.x=T, all.y=F)
 
@@ -79,7 +78,7 @@ tapply(bysub.final$threshold, list(bysub.final$condition, bysub.final$subnum), l
 
 
 #OUTPUT DATA
-write.csv(bysub.final, "MAstudy2_novices_bysub.csv")
-write.csv(nofno16[is.na(nofno16$subnum)==F,], "MAstudy2_novices_bytrial.csv")
+write_csv(bysub.final, "data/study2/novices/finaldata/MAstudy2_novices_bysub.csv")
+write_csv(nofno16[is.na(nofno16$subnum)==F,], "data/study2/novices/finaldata/MAstudy2_novices_bytrial.csv")
 
 
