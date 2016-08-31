@@ -1,0 +1,142 @@
+---
+title: "Abacus gesture study 1"
+author: "Brooks et al."
+date: "August 31, 2016"
+output: 
+  html_document:
+    toc: true
+    number_sections: true
+    highlight: tango
+    theme: spacelab
+---
+
+```{r include=FALSE}
+require(knitr)
+opts_chunk$set(
+  cache=TRUE,
+  warn=FALSE,
+  error=FALSE,
+  size="small"    # slightly smaller font for code
+)
+```
+
+```{r}
+library(ggplot2)
+library(directlabels)
+library(car)
+library(lme4)
+library(langcog)
+# library(plyr)
+
+rm(list=ls())
+theme_set(theme_mikabr() +
+            theme(panel.grid = element_blank(),
+                  strip.background = element_blank()))
+font <- "Open Sans"
+```
+
+# Read in data
+
+```{r}
+data = read.csv("data/study1/Combined 2011 2012 coded data 11-25-13.csv")
+```
+
+Data cleaning.
+
++ round difficulty ratings so they make up distinct groups
++ create a binomial measure of gesture size
++ create a binomial measures of gesture present
++ exclude participant 2455 - only 5 years old
+
+```{r}
+data$rdif=round(data$difficulty)
+data$size.01 <- ifelse(data$size > 2, 1, ifelse(data$size < 3, 0, NA))
+data$g.present = ifelse(data$g.present==9, NA, data$g.present)
+data = data[data$subnum!=2455,]
+```
+
+# Descriptives
+
+Proportion of trials containing gesture is `r mean(data$g.present, na.rm=T)`.
+
+Now look at the the trials with no gesture.
+
+```{r}
+length(data[data$g.present==0 & !is.na(data$g.present),]$g.present) #168 trials
+nog <- data[data$g.present==0 & !is.na(data$g.present),]
+hist(nog$level)
+sort(nog$level)
+```
+
+129 (77%) were on trials of level 3 or lower, meaning that there were only 2 addends in the problem. 
+
+# Statistical models
+
+consider the following variables: level, difficulty, # of moves,trial
+
+```{r}
+hist(data$level)
+hist(data$difficulty)
+hist(data$moves)
+hist(data$trial)
+```
+
+We ran a mixed effects regression model predicting size as a continuous variable with Subjective Difficulty, Trial Number, log of Problem Level (our first measure of objective difficulty), and Number of Steps Required (our second measure of objective difficulty) as independent variables, with a random intercept of subject and random slopes for all four independent variables. 
+
+```{r}
+sizefull <- lmer(size ~ difficulty + moves + trial + log(level) + 
+                   (difficulty + moves + trial + log(level)| subnum), 
+                 data=data) 
+```
+
+binomial analyses
+
+```{r}
+size.allfour.binom <- glmer(size.01 ~ difficulty + moves + trial + log(level) + 
+                              (difficulty + moves + trial + log(level)| subnum), 
+                            data = data, family="binomial")
+```
+
+# Plot
+
+Size by level and difficulty graph
+
+get median difficulty level by problem level
+
+```{r}
+ms <- aggregate(difficulty ~ level + subnum, data=data, mean)
+meds <- aggregate(difficulty ~ level, data=ms, median)
+names(meds) <- c("level","med")
+data2 <- merge(data, meds, by="level", all.x=T)
+data <- data2
+data$Difficulty_Category <- ifelse(data$difficulty < data$med, 
+                                   "Below Median Difficulty (Easier)", 
+                                   "At or Above Median Difficulty (Harder)")
+```
+
+More aggregation.
+
+```{r}
+data$Subjective_Difficulty <- data$Difficulty_Category
+ms1 <- aggregate(size ~ level + Subjective_Difficulty + subnum, data=data, mean)
+ms2 <- aggregate(size ~ level + Subjective_Difficulty, data=ms1, mean)
+data$Subjective_Difficulty <- factor(data$Subjective_Difficulty)
+ms2$measure.type <- "Gesture Size"
+ms2$measure <- ms2$size
+ms <- rbind.fill(ms2)
+```
+
+And plot.
+
+```{r}
+qplot(level,measure, colour=Subjective_Difficulty,
+      label=c(Subjective_Difficulty),
+      data=ms, 
+      ylab=c("Average Gesture Size"), 
+      xlab=c("Problem Level (Number of Addends - 1)"), ylim=c(1,4)) +
+  geom_smooth()+
+  theme_bw(base_size=14) +
+  scale_color_brewer(palette="Set1")+
+  theme(legend.justification = c(0,0), legend.position=c(.6,.7))
+```
+
