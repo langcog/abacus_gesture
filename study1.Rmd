@@ -26,6 +26,8 @@ library(directlabels)
 library(car)
 library(lme4)
 library(langcog)
+library(dplyr)
+library(knitr)
 # library(plyr)
 
 rm(list=ls())
@@ -89,12 +91,24 @@ sizefull <- lmer(size ~ difficulty + moves + trial + log(level) +
                  data=data) 
 ```
 
-binomial analyses
+And show coefficients in a nice table. 
+
+```{r}
+kable(summary(sizefull)$coefficients, digits = 3)
+```
+
+Binomial analyses
 
 ```{r}
 size.allfour.binom <- glmer(size.01 ~ difficulty + moves + trial + log(level) + 
                               (difficulty + moves + trial + log(level)| subnum), 
                             data = data, family="binomial")
+```
+
+And show coefficients.
+
+```{r}
+kable(summary(size.allfour.binom)$coefficients, digits = 3)
 ```
 
 # Plot
@@ -123,7 +137,7 @@ ms2 <- aggregate(size ~ level + Subjective_Difficulty, data=ms1, mean)
 data$Subjective_Difficulty <- factor(data$Subjective_Difficulty)
 ms2$measure.type <- "Gesture Size"
 ms2$measure <- ms2$size
-ms <- rbind.fill(ms2)
+ms <- bind_rows(ms2)
 ```
 
 And plot.
@@ -134,9 +148,24 @@ qplot(level,measure, colour=Subjective_Difficulty,
       data=ms, 
       ylab=c("Average Gesture Size"), 
       xlab=c("Problem Level (Number of Addends - 1)"), ylim=c(1,4)) +
-  geom_smooth()+
+  geom_smooth() +
   theme_bw(base_size=14) +
   scale_color_brewer(palette="Set1")+
   theme(legend.justification = c(0,0), legend.position=c(.6,.7))
 ```
 
+# Control for coder
+
+Try this out. 
+
+```{r}
+sizefull <- lmer(size ~ difficulty + moves + trial + log(level) + 
+                   (difficulty + moves + trial + log(level)| subnum), 
+                 data=data) 
+```
+
+And show coefficients in a nice table. 
+
+```{r}
+kable(summary(sizefull)$coefficients, digits = 3)
+```
